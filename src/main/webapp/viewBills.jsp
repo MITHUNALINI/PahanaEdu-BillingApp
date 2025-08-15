@@ -1,0 +1,145 @@
+<%@ page import="java.util.*, java.text.DecimalFormat" %>
+<%@ page import="com.pahanaedu.model.Bill" %>
+<%@ include file="header.jsp" %>
+<%@ page contentType="text/html;charset=UTF-8" %>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Bills</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+<div class="container mx-auto px-4 py-8 max-w-7xl">
+    <div class="flex justify-between items-center mb-8">
+        <h2 class="text-2xl font-bold text-gray-800">All Bills</h2>
+
+        <% if ("admin".equalsIgnoreCase(admin)) { %>
+        <a href="adminPanel.jsp" class="no-print inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+            <i class="fas fa-arrow-left mr-2"></i> Back to Admin Panel
+        </a>
+        <% } %>
+    </div>
+
+    <div class="no-print bg-white rounded-lg shadow-md p-6 mb-8">
+        <form method="get" action="BillController" class="space-y-4">
+            <input type="hidden" name="action" value="list" />
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Customer Account</label>
+                    <input type="text" name="account" value="<%= request.getParameter("account") != null ? request.getParameter("account") : "" %>"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Invoice Number</label>
+                    <input type="text" name="invoicenum" value="<%= request.getParameter("invoicenum") != null ? request.getParameter("invoicenum") : "" %>"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">From Date</label>
+                    <input type="date" name="from" value="<%= request.getParameter("from") != null ? request.getParameter("from") : "" %>"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">To Date</label>
+                    <input type="date" name="to" value="<%= request.getParameter("to") != null ? request.getParameter("to") : "" %>"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-4">
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-filter mr-2"></i> Filter
+                </button>
+
+                <a href="BillController?action=list" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors">
+                    <i class="fas fa-times mr-2"></i> Clear Filters
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Invoice Number</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Books Purchased</th>
+                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Amount (LKR)</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bill Date</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Generated By</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider no-print">Action</th>
+                </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                <%
+                    List<Bill> salesList = (List<Bill>) request.getAttribute("billList");
+                    DecimalFormat df = new DecimalFormat("#,##0.00");
+                    int count = 1;
+
+                    if (salesList != null && !salesList.isEmpty()) {
+                        for (Bill sale : salesList) {
+                %>
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><%= count++ %></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-center bg-yellow-100"><%= sale.getId() %></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <%= sale.getCustomerName() %> <span class="text-gray-500">(<%= sale.getAccountNumber() %>)</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><%= sale.getBooksPurchased() %></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right"><%= df.format(sale.getTotalAmount()) %></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><%= sale.getBillingTime() %></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center"><%= sale.getStaffUsername() %></td>
+
+                    <% if (!"Cashier".equalsIgnoreCase(role) && !"Manager".equalsIgnoreCase(role)) { %>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium no-print">
+                        <a href="BillController?action=delete&id=<%= sale.getId() %>"
+                           class="text-red-600 hover:text-red-900"
+                           onclick="return confirm('Are you sure you want to delete this bill?');">
+                            <i class="fas fa-trash-alt mr-1"></i> Delete
+                        </a>
+                    </td>
+                    <% } else { %>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 italic no-print">
+                        No actions allowed for <%= role %> (Refer Admin)
+                    </td>
+                    <% } %>
+                </tr>
+                <%
+                    }
+                } else {
+                %>
+                <tr>
+                    <td colspan="8" class="px-6 py-4 text-center text-sm text-gray-500">No sales records found.</td>
+                </tr>
+                <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <% if (salesList != null) { %>
+    <div class="mt-4 text-right no-print">
+        <span class="text-sm font-medium text-gray-700">Total Invoices: <span class="font-bold"><%= salesList.size() %></span></span>
+    </div>
+    <% } %>
+</div>
+</body>
+</html>
